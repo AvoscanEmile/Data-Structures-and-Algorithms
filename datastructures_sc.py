@@ -24,6 +24,13 @@ class ValidationUtils:
             return value
         else:
             raise InvalidInputError(error_message)
+    @staticmethod
+    def validate_numeric_list(value, error_message) :
+        if isinstance(value, list) and all(isinstance(x, (int, float)) for x in value):
+            return value
+        else: 
+            raise InvalidInputError(error_message)
+        
 
 class CreditCard:
     # Validates and adds attributes to the istance of the class. If some attribute is not provided during the creation of the class the value of the attribute defaults to None. This is to not stop the creation of an incomplete classes, since set methods are defined for this class. 
@@ -98,10 +105,59 @@ class CreditCard:
         else: 
             change = abs(self._balance - validated_payment)
             self._balance = 0
-            return f'Your change is {change}'
+            return True, 'Your change:', change
 
-myCard = CreditCard('a', 'a', '1234123412341234', 1000)
-myCard.charge(500)
-ic(myCard._balance)
-ic(myCard.make_payment(600))
-ic(myCard._balance)
+class Vector: 
+    # If integer n is provided it assigns to _coords a list of n zeroes. If a list of numeric (int or float) is provided it assigns the list to _coord. Otherwise it raises InvalidInputError
+    def __init__(self, value):
+        if type(value) == int:
+            self._coords = [0] * value
+        else:
+            self._coords = ValidationUtils.validate_numeric_list(value, f'Value for __init__ must be a list of numeric (int or float) types or an integer. {value} of type {type(value)} was provided')
+    # _coords getter, setter and deleter methods. Setter is different to __setitem__ in that it assigns the whole coordinates, not just a value. Deleter assigns every coordinate to 0 instead of actually deleting the attribute
+    @property
+    def coords(self):
+        return self._coords
+    @coords.setter
+    def coords(self, value):
+        self._coords = ValidationUtils.validate_numeric_list(value, f'Coords must be a list of numeric (int or float) types. {value} of type {type(value)} was provided') 
+    @coords.deleter
+    def coords(self):
+        self._coords = [0] * len(self._coords)
+    # Adding the supported behaviours for len(Vector), Vector[i], and Vector[i] = value.
+    def __len__(self):
+        return len(self._coords)
+    def __getitem__(self, j):
+        return self._coords[j]
+    def __setitem__(self, j, value):
+        self._coords[j] = value
+    # Error handling for inputing an instance of a different type as an other argument.
+    def _handle_error(self, other):
+        if not isinstance(other, Vector):
+            raise InvalidInputError(f'Addition error between Vector type and {type(other)}. Vector only supports addition between other instances of the Vector class')
+    # Special addition method for two Vector types since regular addition of list concatenates them. This method also validates that the added objects are both vectors and that they're of the same dimension before adding them. 
+    def __add__(self, other):
+        self._handle_error(other)
+        if len(self) != len(other):
+            raise InvalidInputError(f'Dimensions of vectors must agree. Dimension of first vector is {len(self)} while dimension of second vector is {len(other)}')
+        result = Vector(len(self))
+        for j in range(len(self)):
+            result[j] = self[j] + other[j]
+        return result
+    # Special handling for equality and inequality between Vector types
+    def __eq__(self, other):
+        self._handle_error(other)
+        return self._coords == other._coords
+    def __ne__(self, other):
+        self._handle_error(other)
+        return not self == other
+    # Special handling for str(Vector)
+    def __str__(self):
+        return '<' + str(self.coords)[1:-1] + '>'
+
+peyoy = CreditCard('Gael', 'HSBC', '1234123412341234', 3000)
+ic(peyoy._balance)
+ic(peyoy.charge(4000))
+ic(peyoy._balance)
+ic(peyoy.make_payment(2000))
+ic(peyoy._balance)
