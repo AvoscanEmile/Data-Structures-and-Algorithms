@@ -154,10 +154,3 @@ class Vector:
     # Special handling for str(Vector)
     def __str__(self):
         return '<' + str(self.coords)[1:-1] + '>'
-
-peyoy = CreditCard('Gael', 'HSBC', '1234123412341234', 3000)
-ic(peyoy._balance)
-ic(peyoy.charge(4000))
-ic(peyoy._balance)
-ic(peyoy.make_payment(2000))
-ic(peyoy._balance)
