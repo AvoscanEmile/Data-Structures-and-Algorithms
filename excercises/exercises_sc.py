@@ -2,7 +2,7 @@ import sys
 sys.path.insert(0, r'C:\\Users\\avosc\\Documents\\Emile\\Coding\\Python\\notes') # You must specify your own local path for the location of .\notes. 
 from datastructures_sc import ValidationUtils
 from icecream import ic
-from abc import ABCMeta, abstractmethod
+from abc import ABC, ABCMeta, abstractmethod
 import math
 from sympy import symbols, diff, simplify
 import tkinter as tk
@@ -12,7 +12,6 @@ import re
 from threading import Thread, Lock
 import time
 import random
-from abc import ABC, abstractmethod
 # 2.1 Software for fire detection, software for medical equipment, software for airplanes. 
 # 2.2 An e-commerce website or a social media. Any piece of software's adaptibility is the difference between sales and bankruptcy. Adaptability is the difference between adapatation to a new market taking a couple months or a couple days. 
 # 2.3 Class that takes selected text and returns it modified depending on the called method. This is a short example, not a throught implementation. 
