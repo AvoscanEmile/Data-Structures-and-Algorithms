@@ -12,6 +12,7 @@ import re
 from threading import Thread, Lock
 import time
 import random
+from abc import ABC, abstractmethod
 # 2.1 Software for fire detection, software for medical equipment, software for airplanes. 
 # 2.2 An e-commerce website or a social media. Any piece of software's adaptibility is the difference between sales and bankruptcy. Adaptability is the difference between adapatation to a new market taking a couple months or a couple days. 
 # 2.3 Class that takes selected text and returns it modified depending on the called method. This is a short example, not a throught implementation. 
@@ -541,13 +542,31 @@ def call_river():
     display_ecosystem(ecosystem)
     print("\nSimulation:")
     simulate_ecosystem(ecosystem, simulation_steps)
-# 2.38 Improved implementation of the code I did to solve 2.24. Incomplete. There's some errors with the fact the dictionaries are being stored as book_object : amount then tried to get accesed with library._booklist[book_title]. I'm trying the new book_title : (book_object, amount). More intuitive and library._booklist[book_title] will actually work. This makes me actually question how does a well structured search engine would manage to search books through multiple things. 
+# 2.38 Improved implementation of the code I did to solve 2.24. Library actually stores the books within it and the storage gets modified when customer takes from it. 
 class NewBook:
     def __init__(self, title, author, year, content):
         self._title = title
         self._author = author
         self._year = year
         self._content = content
+
+class NewLibrary:
+    def __init__(self):
+        self._booklist = {}
+
+    def add_book(self, book, num_copies=1):
+        if book._title in self._booklist:
+            self._booklist[book._title] = (book, self._booklist[book._title][1] + num_copies)
+        else:
+            self._booklist[book._title] = (book, num_copies)
+
+    def get_book(self, book_title, num_copies=1):
+        if book_title in self._booklist and self._booklist[book_title][1] >= num_copies:
+            book, quantity = self._booklist[book_title]
+            self._booklist[book_title] = (book, quantity - num_copies)
+            return book
+        else:
+            return None
 
 class NewCustomer:
     def __init__(self, name, email):
@@ -556,17 +575,13 @@ class NewCustomer:
         self._booklist = {}
 
     def buy_book(self, library, book_title, num_copies=1):
-        # Check if the book is available in the library
-        available_books = [book._title for book in library._booklist.keys()]
-        if book_title in available_books and library._booklist[book_title] >= num_copies:
+        # Check if the book title is available in the library
+        if library.get_book(book_title, num_copies) is not None:
             # Update the customer's booklist
             if book_title in self._booklist:
                 self._booklist[book_title] += num_copies
             else:
                 self._booklist[book_title] = num_copies
-
-            # Update the library's book count
-            library._booklist[book_title] -= num_copies
 
             print(f"You've successfully purchased {num_copies} copies of {book_title}.")
         else:
@@ -577,21 +592,6 @@ class NewCustomer:
 
     def read_book(self, book):
         if book in self._booklist:
-            return book
-
-class NewLibrary:
-    def __init__(self):
-        self._booklist = {}
-
-    def add_book(self, book, num_copies=1):
-        if book in self._booklist:
-            self._booklist[book] += num_copies
-        else:
-            self._booklist[book] = num_copies
-
-    def get_book(self, book):
-        if book in self._booklist and self._booklist[book] > 0:
-            self._booklist[book] -= 1
             return book
 
 class NewEbookReader(Customer):
@@ -610,9 +610,9 @@ class NewEbookReader(Customer):
 
     def next_page(self):
         self._current_page += 1
+# This is a temporary test while the fully dedicated tests for these notes gets implemented. 
 def test_library():
     # Assuming you already have the Book, Library, and EbookReader classes defined
-
     # Create an instance of Library and Customer
     library_instance = NewLibrary()
     # Add a list of 100 different books to the library
@@ -628,8 +628,83 @@ def test_library():
         # Add the book to the library
         library_instance.add_book(book_instance, num_copies=random.randint(1, 10))
     # Show the titles of all the books in _booklist
-    print([(book._title, amount) for (book, amount) in library_instance._booklist.items()])
+    ic(library_instance._booklist)
+    # client_instance buys one of each book from the library, then print out the updated _booklist
     client_instance = NewCustomer('John', 'easd@dasf.com')
-    client_instance.buy_book(library_instance, 'Book1')
-    # for book in library_instance._booklist.keys():
-    #     client_instance.buy_book(library_instance, book._title, 1)
+    for book in library_instance._booklist.keys():
+        client_instance.buy_book(library_instance, book)
+    ic(library_instance._booklist)
+# 2.39 Inheritance hierarchy for the area and perimiter of multiple types of polygons. From the three types of triangles, to quadrilaterals, to regular polygons. 
+class Polygon(ABC):
+    @abstractmethod
+    def area(self):
+        pass
+
+    @abstractmethod
+    def perimeter(self):
+        pass
+
+class Triangle(Polygon):
+    def __init__(self, side1, side2, side3):
+        self.side1 = side1
+        self.side2 = side2
+        self.side3 = side3
+
+    def area(self):
+        s = (self.side1 + self.side2 + self.side3) / 2
+        return math.sqrt(s * (s - self.side1) * (s - self.side2) * (s - self.side3))
+
+    def perimeter(self):
+        return self.side1 + self.side2 + self.side3
+
+class Quadrilateral(Polygon):
+    def __init__(self, side1, side2, side3, side4):
+        self.side1 = side1
+        self.side2 = side2
+        self.side3 = side3
+        self.side4 = side4
+
+    def area(self):
+        return self.side1 * self.side2
+
+    def perimeter(self):
+        return self.side1 + self.side2 + self.side3 + self.side4
+
+class RegPolygon(Polygon):
+    def __init__(self, side_length, side_amount):
+        self.side_length = side_length
+        self.side_amount = side_amount
+    def area(self):
+        cot_angle = 1 / math.tan(math.pi / self.side_amount)
+        area = (1 / 4) * self.side_amount * self.side_length**2 * cot_angle
+        return area
+    def perimeter(self):
+        return self.side_amount * self.side_length
+
+class Pentagon(RegPolygon):
+    def __init__(self, side_length):
+        super().__init__(side_length, 5)
+
+class Hexagon(RegPolygon):
+    def __init__(self, side_length):
+        super().__init__(side_length, 6)
+
+class Octagon(RegPolygon):
+    def __init__(self, side_length):
+        super().__init__(side_length, 8)
+
+class IsoscelesTriangle(Triangle):
+    def __init__(self, base, equal_side):
+        super().__init__(base, equal_side, equal_side)
+
+class EquilateralTriangle(Triangle):
+    def __init__(self, side):
+        super().__init__(side, side, side)
+
+class Rectangle(Quadrilateral):
+    def __init__(self, length, width):
+        super().__init__(length, width, length, width)
+
+class Square(Quadrilateral):
+    def __init__(self, side):
+        super().__init__(side, side, side, side)
